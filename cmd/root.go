@@ -59,8 +59,8 @@ func initConfig() {
 		viper.SetConfigFile(cfgFile)
 	}
 
-	viper.SetConfigName("codedeployagent")       // name of config file (without extension)
-	viper.AddConfigPath("/etc/codedeploy-agent") // adding home directory as first search path
+	viper.SetConfigName("codedeployagent")            // name of config file (without extension)
+	viper.AddConfigPath("/etc/codedeploy-agent/conf") // adding home directory as first search path
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
