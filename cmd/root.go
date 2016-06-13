@@ -63,7 +63,8 @@ func initConfig() {
 	viper.AddConfigPath("/etc/codedeploy-agent/conf") // adding home directory as first search path
 
 	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	if err := viper.ReadInConfig(); err != nil {
+		fmt.Printf("Error while trying to load %s file - %s\n", viper.ConfigFileUsed(), err)
+		os.Exit(3)
 	}
 }
