@@ -16,7 +16,9 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
+	"github.com/n1tr0g/aws-gocodedeploy-agent/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -27,22 +29,25 @@ var statusCmd = &cobra.Command{
 	Long: `NAME
   status - Report running status of the AWS CodeDeploy agent`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// TODO: Work your own magic here
-		fmt.Println("status called")
+		status()
 	},
 }
 
 func init() {
 	RootCmd.AddCommand(statusCmd)
+}
 
-	// Here you will define your flags and configuration settings.
+func status() {
+	process, err := utils.GetServiceProcess()
+	if err != nil {
+		fmt.Printf("No AWS CodeDeploy agent running - %s\n", err)
+		os.Exit(1)
+	}
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// statusCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// statusCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
+	err = utils.IsProcessRunning(process)
+	if err != nil {
+		fmt.Printf("No AWS CodeDeploy agent running - %s\n", err)
+		os.Exit(2)
+	}
+	fmt.Printf("The AWS CodeDeploy agent is running as PID %d\n", process.Pid)
 }
