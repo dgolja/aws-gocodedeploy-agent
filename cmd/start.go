@@ -16,7 +16,12 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
+	"github.com/n1tr0g/aws-gocodedeploy-agent/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -29,20 +34,45 @@ var startCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// TODO: Work your own magic here
 		fmt.Println("start called")
+		start()
 	},
 }
 
 func init() {
 	RootCmd.AddCommand(startCmd)
+}
 
-	// Here you will define your flags and configuration settings.
+func start() {
+	signalStop := make(chan os.Signal, 1)
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// startCmd.PersistentFlags().String("foo", "", "A help for foo")
+	pidfile, err := utils.GetPidFile()
+	if err != nil {
+		fmt.Printf("Ignoring ... pid file definition missing - %s", err)
+	}
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// startCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	process, err := utils.GetServiceProcess()
+	if err == nil {
+		err = utils.IsProcessRunning(process)
+		if err == nil {
+			fmt.Printf("The AWS CodeDeploy agent is already running as PID %d", process.Pid)
+			os.Exit(1)
+		}
+	}
 
+	myPID := os.Getpid()
+
+	if err := utils.SavePidIDToFile(pidfile, myPID); err != nil {
+		fmt.Printf("Unable to save pid %d to %s - %s", myPID, pidfile, err)
+	}
+
+	go func() {
+		for {
+			time.Sleep(10 * time.Second)
+			fmt.Println("Working ...")
+		}
+	}()
+
+	signal.Notify(signalStop, os.Interrupt, syscall.SIGTERM)
+	<-signalStop
+	fmt.Printf("Quiting...%s \n", pidfile)
 }
