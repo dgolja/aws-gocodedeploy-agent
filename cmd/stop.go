@@ -16,7 +16,9 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
+	"github.com/n1tr0g/aws-gocodedeploy-agent/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -27,22 +29,30 @@ var stopCmd = &cobra.Command{
 	Long: `NAME
   stop - stop the AWS CodeDeploy agent`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// TODO: Work your own magic here
-		fmt.Println("stop called")
+		stop()
 	},
 }
 
 func init() {
 	RootCmd.AddCommand(stopCmd)
+}
 
-	// Here you will define your flags and configuration settings.
+func stop() {
+	process, err := utils.GetServiceProcess()
+	if err != nil {
+		fmt.Printf("No AWS CodeDeploy agent running - %s\n", err)
+		os.Exit(1)
+	}
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// stopCmd.PersistentFlags().String("foo", "", "A help for foo")
+	err = utils.StopRunningProcess(process)
+	if err != nil {
+		fmt.Printf("No AWS CodeDeploy agent running - %s\n", err)
+		os.Exit(2)
+	}
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// stopCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	pidfile, _ := utils.GetPidFile()
 
+	if err := os.Remove(pidfile); err != nil {
+		fmt.Printf("Unable to remove %s - %s\n", pidfile, err)
+	}
 }
