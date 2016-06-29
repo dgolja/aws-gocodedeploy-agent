@@ -33,7 +33,6 @@ var startCmd = &cobra.Command{
   start - start the AWS CodeDeploy agent`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// TODO: Work your own magic here
-		fmt.Println("start called")
 		start()
 	},
 }
